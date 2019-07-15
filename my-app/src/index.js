@@ -11,7 +11,7 @@ function Square(props){
           {props.value}
         </button>
       );
-    }
+}
   
   class Board extends React.Component {
 
@@ -54,6 +54,7 @@ function Square(props){
           squares: Array(9).fill(null)
         }],
         stepNumber:0,
+        orders: [],
         xIsNext: true
       }
    }
@@ -71,6 +72,7 @@ function Square(props){
           squares: squares
         }]),
         stepNumber: history.length,
+        orders: orders.push(i),
         xIsNext: !this.state.xIsNext,
       });
     }
@@ -89,7 +91,7 @@ function Square(props){
 
       const moves = history.map((step, move) => {
         const desc = move ?
-          'Go to move #' + move :
+          'Go to move #' + move + 'at square ' + this.stat.orders(move) :
           'Go to game start';
         return (
           <li key={move}>
