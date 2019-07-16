@@ -19,28 +19,30 @@ function Square(props){
       return (<Square 
       value={this.props.squares[i]}
       onClick={()=> this.props.onClick(i)}
+      key={i}
       />);
+    }
+
+    generateRow () {
+      let table = [];
+      let index = -1;
+    
+      for(let i=0; i<3; i++){
+        let column = [];
+        for(let j=0; j<3; j++){
+          index++;
+          column.push(this.renderSquare(index));
+        };
+        table.push(<div className="board-row">{column}</div>);
+      }
+      return table;
     }
   
     render() {
       return (
         <div>
-          <div className="board-row">
-            {this.renderSquare(0)}
-            {this.renderSquare(1)}
-            {this.renderSquare(2)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(3)}
-            {this.renderSquare(4)}
-            {this.renderSquare(5)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(6)}
-            {this.renderSquare(7)}
-            {this.renderSquare(8)}
-          </div>
-        </div>
+            {this.generateRow()}
+         </div>
       );
     }
   }
@@ -60,21 +62,34 @@ function Square(props){
    }
 
     handleClick(i){
+      //history array starts with an empty board
+      //while orders should start with nth, until first move is made, so there are +1 difference in handling the two
       const history = this.state.history.slice(0, this.state.stepNumber +1);
       const current = history[history.length -1];
       const squares = current.squares.slice();
+      const rowcolumn = getRowColumn(i);
+      const newOrders = this.state.orders.slice(0, this.state.stepNumber);
+    
+      console.log(i + "is clicked");
+
       if (calculateWinner(squares) || squares[i]){
         return;
       }
+
+      newOrders.push(rowcolumn);
+      console.log(newOrders);
       squares[i] = this.state.xIsNext ? 'X' : 'O';
       this.setState({
         history: history.concat([{
           squares: squares
         }]),
         stepNumber: history.length,
-        orders: orders.push(i),
+        orders: newOrders,
         xIsNext: !this.state.xIsNext,
+        sortingDesc: true,
       });
+
+      console.log(this.state.orders);
     }
 
     jumpTo(step)  {
@@ -84,22 +99,36 @@ function Square(props){
       });
     }
 
+    sorting(){
+      this.setState({
+        sortingDesc: !this.sortingDesc,
+      });
+    }
+
     render() {
       const history = this.state.history;
       const current = history[this.state.stepNumber];
       const winner = calculateWinner(current.squares);
+      const sortingDesc = this.state.sortingDesc;
 
       const moves = history.map((step, move) => {
-        const desc = move ?
-          'Go to move #' + move + 'at square ' + this.stat.orders(move) :
+        let desc = move ?
+          'Go to move #' + move + ' (' + this.state.orders[move-1] +')':
           'Go to game start';
+        desc = (move===this.state.stepNumber) ? <b>{desc}</b> : desc;
         return (
           <li key={move}>
             <button onClick={() => this.jumpTo(move)}>{desc}
             </button>
-            </li>
+          </li>
         )
-      })
+      });
+
+      moves = sortingDesc ? moves : moves.reverse();
+
+      const sort = <button onClick={() => this.sorting()}>Sorting</button>
+
+
 
       let status;
       if(winner){
@@ -117,6 +146,7 @@ function Square(props){
             <div>{status}</div>
             <ol>{moves}</ol>
           </div>
+          <div>{sort}</div>
         </div>
       );
     }
@@ -147,4 +177,19 @@ function Square(props){
       }
     }
     return null;
+  }
+
+  function getRowColumn(number){
+    const getRowColumn = [
+      [0,0],
+      [0,1],
+      [0,2],
+      [1,0],
+      [1,1],
+      [1,2],
+      [2,0],
+      [2,1],
+      [2,2],
+    ]
+    return getRowColumn[number];
   }
